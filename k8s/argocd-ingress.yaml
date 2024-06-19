@@ -11,7 +11,9 @@ metadata:
     # l'ingress nginx à se connecter au backend en utilisant HTTPS avec backend-protocol :
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"    
     # On restreint les IP sources
+    #nginx.ingress.kubernetes.io/whitelist-source-range: "31.36.121.222/32, 174.12.34.0/24"
     nginx.ingress.kubernetes.io/whitelist-source-range: "31.36.121.222/32"
+
 spec:
   ingressClassName: nginx
   tls:
