@@ -31,7 +31,7 @@ spec:  # spec du deployment
                 path: default.conf # nom du fichier de montage
       containers:
         - name: frontend
-          image: techopsfr/app-vue-frontend:26e570c
+          image: techopsfr/app-vue-frontend:f3890b1
           ports:
             - containerPort: 80
           volumeMounts:

@@ -24,7 +24,7 @@ spec:
         - name: docker-hub-secret # Le nom du Secret créé avec 'kubectl create secret docker-registry'
       containers:
         - name: api
-          image: techopsfr/app-vue-nodeapi:26e570c
+          image: techopsfr/app-vue-nodeapi:f3890b1
           ports:
             - containerPort: 80
           env:
