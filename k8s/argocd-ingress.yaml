@@ -5,9 +5,10 @@ metadata:
   namespace: argocd
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-issuer # le nom de l'issuer dans letsencrypt-issuer.yaml
+    # Permet le passage SSL directement au backend. Utile lorsque le backend gère le TLS et argo gère le SSL
     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-    # If you encounter a redirect loop or are getting a 307 response code
-    # then you need to force the nginx ingress to connect to the backend using HTTPS.
+    # Si vous rencontrez une boucle de redirection ou si vous obtenez un code de réponse 307, vous devez forcer 
+    # l'ingress nginx à se connecter au backend en utilisant HTTPS avec backend-protocol :
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"    
 spec:
   ingressClassName: nginx
