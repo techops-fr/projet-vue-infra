@@ -5,7 +5,7 @@ metadata:
   # Pour faire le lien avec Certif + RedirectHttps on utilise les annotations
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-issuer # le nom de l'issuer dans letsencrypt-issuer.yaml
-    #nginx.ingress.kubernetes.io/force-ssl-redirect: "true" # Redirection http -> https
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true" # Redirection http -> https
     #nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: nginx
