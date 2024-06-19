@@ -1,0 +1,19 @@
+#
+# Le ConfigMap pour s3cmd
+# 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: s3cmd-config
+# Endpoint du storage : https://mongodb-backup-vue-nginx.fra1.digitaloceanspaces.com
+# donc host_bucket = mongodb-backup-vue-nginx
+# et host_base = fra1.digitaloceanspaces.com
+data:
+  s3cfg: |
+    [default]
+    access_key = ACCESS_KEY_PLACEHOLDER
+    secret_key = SECRET_KEY_PLACEHOLDER
+    host_base = fra1.digitaloceanspaces.com
+    host_bucket = %(bucket)s.fra1.digitaloceanspaces.com
+    signature_v2 = False
+    use_https = True

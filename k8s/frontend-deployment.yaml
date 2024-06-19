@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  labels:
+    app.kubernetes.io/name: vue-app
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/part-of: auth-app
+spec:  # spec du deployment
+  replicas: 1
+  selector:
+    matchLabels: # Les labels que le deployment doit surveiller
+      app.kubernetes.io/name: vue-app
+      app.kubernetes.io/component: frontend
+      app.kubernetes.io/part-of: auth-app   
+  template: # le template du pod
+    metadata:
+      labels:
+        app.kubernetes.io/name: vue-app
+        app.kubernetes.io/component: frontend
+        app.kubernetes.io/part-of: auth-app
+    spec:  # spec du Pod
+      imagePullSecrets:  # Pour les images privées sur DockerHub
+        - name: docker-hub-secret # Le Secret que l'on a initialisé
+      volumes: # Les volumes dont va avoir besoin le Pod
+          - name: nginx-config-volume
+            configMap:
+              name: nginx-config # Le metadata.name dans nginx-configmap.yaml
+              items: # Les items à récupérer dans le configMap nginx-config
+              - key: nginx.conf    # La clé dans data dans nginx-configmap.yaml
+                path: default.conf # nom du fichier de montage
+      containers:
+        - name: frontend
+          image: techopsfr/myapp-frontend-vue
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-config-volume # le name déclaré dans volumes (plus haut)
+              mountPath: /etc/nginx/conf.d
+          resources:
+            requests: # Bonne pratique : on limite les ressources
+              memory: "128Mi"
+              cpu: "250m" 
+            limits:
+              memory: "256Mi"
+              cpu: "500m"

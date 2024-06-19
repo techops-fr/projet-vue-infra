@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vue-nginx
+  namespace: argocd # Le namespace où on a installé ArgoCD
+spec:
+  project: default # 1 seule application argo pour le moment donc default
+  source:    
+    repoURL: https://github.com/techops-fr/projet-vue-infra.git # Nom du repo contenant l'infra
+    targetRevision: HEAD # Le commit à suivre (HEAD / MASTER /MAIN) HEAD=dernier commit master
+    path: k8s # Le dossier qui contient nos fichiers k8s yaml
+  destination:
+    server: https://kubernetes.default.svc # Adresse de l'API Server
+    namespace: default
+  syncPolicy:
+    automated: # Synchro auto depuis le repo Git Source
+      selfHeal: true # Si on modifie les fichiers dans le cluster, ArgoCD les efface
+      prune: true # Si on supprime un objet dans Git, l'objet sera supprimé du cluster

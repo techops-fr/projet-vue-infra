@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  labels:
+    app.kubernetes.io/name: vue-app
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/part-of: auth-app 
+spec:
+  type: ClusterIP # Peut être omis car valeur par défaut
+  ports:
+    - port: 80         # Port du service
+      targetPort: 80   # Port d'écoute du Pod/container (peut être omis si = à port)
+  selector: # Pour récupérer les Pods frontend nginx du deployment
+    app.kubernetes.io/name: vue-app
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/part-of: auth-app

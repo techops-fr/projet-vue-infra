@@ -1,0 +1,70 @@
+#
+# Le CronJob de sauvegarde de la base MongoDB
+#
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: backup-mongodb
+spec:
+  #schedule: "*/5 * * * *" # Toutes les 5 minutes
+  schedule: "* */2 * * *" # Toutes les 2 heures
+  concurrencyPolicy: Forbid
+  suspend: false
+  successfulJobsHistoryLimit: 3 # On ne garde que les 3 derniers
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure  
+          containers:
+          - name: backup-mongodb-container
+            image: vincentfr/s3mongo
+            env:
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb        # Nom du Secret (cf: kubctl get secrets) - crée à l'instal de mongodb avec Helm
+                  key: mongodb-root-password # La clé (cf: kubctl describle secrets mongodb)
+            - name: MONGODB_USER
+              value: root
+            - name: MONGODB_HOST
+              #value: mongodb:27017           # Pour architecture en standalone
+              value: mongodb-headless:27017   # Pour architecture en replicaset
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: s3cmd-secret
+                  key: access_key
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: s3cmd-secret
+                  key: secret_key
+            volumeMounts:
+            - name: s3cmd-config-volume
+              mountPath: /tmp/.s3cfg
+              subPath: s3cfg
+            command: ["/bin/sh", "-c"]
+            args:
+            - |
+              cp /tmp/.s3cfg /root
+              sed -i "s@ACCESS_KEY_PLACEHOLDER@${AWS_ACCESS_KEY_ID}@" /root/.s3cfg
+              sed -i "s@SECRET_KEY_PLACEHOLDER@${AWS_SECRET_ACCESS_KEY}@" /root/.s3cfg
+              echo "Dump et archivage de la base Mongodb"
+              mongodump --uri="mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@${MONGODB_HOST}" --archive="/tmp/backup.archive.gz" --gzip && \
+                s3cmd --config=/root/.s3cfg put /tmp/backup.archive.gz s3://mongodb-backup-vue-nginx/backup-mongodb-$(date +\%Y\%m\%d-\%H:\%M).gz
+              echo "Nettoyage des anciens backups : retention des 10 derniers"
+              s3cmd --config=/root/.s3cfg ls s3://mongodb-backup-vue-nginx | sort | head -n -10 | awk '{print $4}' | xargs -I {} s3cmd --config=/root/.s3cfg del {}
+              echo "Fin de la sauvegarde"
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "500m"
+              limits:
+                memory: "512Mi"
+                cpu: "1"
+          volumes:
+          - name: s3cmd-config-volume
+            configMap:
+              name: s3cmd-config                

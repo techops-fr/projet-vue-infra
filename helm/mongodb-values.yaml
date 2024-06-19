@@ -1,0 +1,23 @@
+#
+# Les values pour Chart MongoDB
+# Pour la liste complète :
+# helm show values bitnami/mongodb
+#
+architecture: replicaset
+replicaCount: 3 
+# resources:
+#   limits:
+#     cpu: 1000m # 1 vCPU
+#     memory: 2Gi
+#   requests:
+#     cpu: 500m # 1/2 vCPU
+#     memory: 600Mi
+auth:
+  enabled: true
+tls:
+  enabled: false
+persistance:
+  storageClass: "do-block-storage" # type RWO ReadWriteOnce = 1 seule Node en RW (liste sc : cf kubectl get sc)
+  size: 1Gi
+metrics:
+  enabled: true # On active les metrics pour Prometheus

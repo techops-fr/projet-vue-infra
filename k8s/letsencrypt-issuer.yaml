@@ -1,0 +1,17 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer # ClusterIssuer = certificat niveau cluster / Issuer = Certificat niveau namespace
+metadata:
+  name: letsencrypt-issuer # le nom qu'on veut lui donner
+  namespace: cert-manager # Pas necessaire car c'est un ClusterIssuer (crossed-namespaces)
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org./directory
+    email: admin@techops.ovh
+    privateKeySecretRef:
+      name: letsencrypt-tls-key # La clé privée a générer (le nom qu'on veut)
+    solvers:
+      - http01: # Le challenge qu'on veut faire (http01 ou dns01) pour vérif identité
+          ingress: 
+            class: nginx
+          # ingress:
+          #   ingressClassName: nginx # Cert-manager va modifier l'ingress pour remplir le challenge

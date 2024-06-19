@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config # Le nom du ConfigMap
+data:
+  nginx.conf: |   # La clé du ConfigMap et | pour indiquer plusieurs lignes
+    server {
+      listen 80;
+      server_name nginx.techops.ovh;
+
+      index index.html;
+      root /usr/share/nginx/html;
+
+      location / {
+        try_files $uri $uri/ /index.html;
+      }
+  
+      error_page 404 /index.html;
+    }

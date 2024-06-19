@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: restore-script
+  namespace: default
+data:
+  restore-script.sh: |
+    #!/bin/sh
+
+    # Variables
+    MONGO_URI="mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@${MONGODB_HOST}"
+    S3_BUCKET=s3://mongodb-backup-vue-nginx
+    CONFIG_FILE="/root/.s3cfg"
+    RESTORE_FILE=$1
+
+    # Fonction pour le dernier backup (latest)
+    restore_latest() {
+      LATEST_BACKUP=$(s3cmd --config=$CONFIG_FILE ls $S3_BUCKET/ | grep -v "DIR" | sort | tail -n 1 | awk '{print $4}')
+      echo "Restauration du dernier backup : $LATEST_BACKUP"
+      s3cmd --config=$CONFIG_FILE get $LATEST_BACKUP /tmp/backup.archive.gz
+      echo "Décompression de l'archive $LATEST_BACKUP ..."
+      gunzip /tmp/backup.archive.gz
+      echo "Restauration de la base de données..."
+      mongorestore --uri=$MONGO_URI --archive=/tmp/backup.archive --drop
+    }
+
+    # Fonction pour une sauvegarde date spécifique
+    restore_specific() {
+      echo "Restauration du backup $RESTORE_FILE..."
+      s3cmd --config=$CONFIG_FILE get $S3_BUCKET/$RESTORE_FILE /tmp/backup.archive.gz
+      echo "Décompression de l'archive $RESTORE_FILE..."
+      gunzip /tmp/backup.archive.gz
+      echo "Restauration de la base de données..."
+      mongorestore --uri=$MONGO_URI --archive=/tmp/backup.archive --drop
+    }
+
+    # Programme principal
+    if [ "$RESTORE_FILE" == "latest" ]; then
+      restore_latest
+    else
+      restore_specific
+    fi

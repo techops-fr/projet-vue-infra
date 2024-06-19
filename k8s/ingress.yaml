@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-ingress
+  # Pour faire le lien avec Certif + RedirectHttps on utilise les annotations
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-issuer # le nom de l'issuer dans letsencrypt-issuer.yaml
+    #nginx.ingress.kubernetes.io/force-ssl-redirect: "true" # Redirection http -> https
+    #nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - vue-nginx.techops.ovh
+    secretName: vue-nginx-tls-cert # le nom qu'on donne au certificat  
+  rules:
+    - host: vue-nginx.techops.ovh # le nom de domaine déclaré
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix # Tout ce qui commence par PATH (ie /api)
+            backend:
+              service:
+                name: api-service # nom défini dans api-node-service.yaml
+                port:
+                  number: 80
+          # - path: /     # On aurait pu utiliser le default backend
+          #   pathType: Prefix
+          #   backend:
+          #     service:
+          #       name: frontend-service # nom définit dans frontend-service.yaml
+          #       port:
+          #         number: 80                  
+  defaultBackend: # On utilise un defautBackend pour toutes les autres requêtes
+    service:
+      name: frontend-service
+      port:
+        number: 80
